@@ -97,13 +97,15 @@ jobs:
                   owner,
                   repo,
                   issue_number: issueNumber,
-                  body: `${marker}
-請 @copilot 根據此 issue 建立一個對應 PR，並補齊完成需求所需的檔案與程式碼。
-
-要求：
-- 以最小可行且完整的變更實作
-- PR 內容需關聯此 issue（例如 Closes #${issueNumber}）
-- 包含必要測試或文件更新（若適用）`
+                  body: [
+                    marker,
+                    "請 @copilot 根據此 issue 建立一個對應 PR，並補齊完成需求所需的檔案與程式碼。",
+                    "",
+                    "要求：",
+                    "- 以最小可行且完整的變更實作",
+                    `- PR 內容需關聯此 issue（例如 Closes #${issueNumber}）`,
+                    "- 包含必要測試或文件更新（若適用）"
+                  ].join("\\n")
                 });
                 core.info(`#${issueNumber}: copilot request comment created.`);
               } else {
