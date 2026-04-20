@@ -1,0 +1,65 @@
+name: Task（任務）
+description: 建立執行任務（實作、測試、文件、維運）。
+title: "[TASK] "
+labels:
+  - type:task
+body:
+  - type: dropdown
+    id: body_type
+    attributes:
+      label: Body Type
+      options:
+        - Task
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0
+        - P1
+        - P2
+        - P3
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: 目的
+      placeholder: 例如：完成角色權限邊界測試
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: 工作項目
+      placeholder: |
+        - [ ] 子任務 1
+        - [ ] 子任務 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: dod
+    attributes:
+      label: Definition of Done (DoD)
+      placeholder: |
+        - [ ] 驗收條件 1
+        - [ ] 驗收條件 2
+    validations:
+      required: true
+
+  - type: input
+    id: labels_extra
+    attributes:
+      label: Labels（額外）
+      placeholder: area:test,area:security
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 相關備註
