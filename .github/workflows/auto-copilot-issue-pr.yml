@@ -1,0 +1,155 @@
+name: Auto Copilot Issue PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Only process one issue number (optional)"
+        required: false
+        type: string
+  schedule:
+    - cron: "0 */6 * * *"
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  issues: write
+  pull-requests: read
+  contents: read
+
+jobs:
+  request-copilot-pr:
+    runs-on: ubuntu-latest
+    env:
+      COPILOT_ASSIGNEE: ${{ vars.COPILOT_ASSIGNEE || 'copilot-swe-agent' }}
+    steps:
+      - name: Ask Copilot to create PRs for issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const marker = "<!-- copilot-auto-pr-request -->";
+            const copilotAssignee = process.env.COPILOT_ASSIGNEE || "copilot-swe-agent";
+
+            async function getOpenIssues() {
+              return github.paginate(github.rest.issues.listForRepo, {
+                owner,
+                repo,
+                state: "open",
+                per_page: 100
+              });
+            }
+
+            async function hasLinkedPr(issueNumber) {
+              const timeline = await github.paginate(github.request, "GET /repos/{owner}/{repo}/issues/{issue_number}/timeline", {
+                owner,
+                repo,
+                issue_number: issueNumber,
+                per_page: 100,
+                headers: {
+                  accept: "application/vnd.github+json"
+                }
+              });
+
+              return timeline.some((event) => event.event === "cross-referenced" && event.source?.issue?.pull_request);
+            }
+
+            async function hasRequestComment(issueNumber) {
+              const comments = await github.paginate(github.rest.issues.listComments, {
+                owner,
+                repo,
+                issue_number: issueNumber,
+                per_page: 100
+              });
+
+              return comments.some((comment) => (comment.body || "").includes(marker));
+            }
+
+            async function processIssue(issue) {
+              if (issue.pull_request || issue.state !== "open") return "skipped";
+
+              const issueNumber = issue.number;
+              const linkedPr = await hasLinkedPr(issueNumber);
+              if (linkedPr) {
+                core.info(`#${issueNumber}: linked PR already exists, skip.`);
+                return "already_linked";
+              }
+
+              const assignees = (issue.assignees || []).map((a) => a.login);
+              if (!assignees.includes(copilotAssignee)) {
+                try {
+                  await github.rest.issues.addAssignees({
+                    owner,
+                    repo,
+                    issue_number: issueNumber,
+                    assignees: [copilotAssignee]
+                  });
+                  core.info(`#${issueNumber}: assigned to ${copilotAssignee}.`);
+                } catch (error) {
+                  core.warning(`#${issueNumber}: failed to assign ${copilotAssignee}. ${error.message}`);
+                }
+              }
+
+              const alreadyCommented = await hasRequestComment(issueNumber);
+              if (!alreadyCommented) {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: issueNumber,
+                  body: `${marker}
+請 @copilot 根據此 issue 建立一個對應 PR，並補齊完成需求所需的檔案與程式碼。
+
+要求：
+- 以最小可行且完整的變更實作
+- PR 內容需關聯此 issue（例如 Closes #${issueNumber}）
+- 包含必要測試或文件更新（若適用）`
+                });
+                core.info(`#${issueNumber}: copilot request comment created.`);
+              } else {
+                core.info(`#${issueNumber}: copilot request comment already exists.`);
+              }
+
+              return "requested";
+            }
+
+            let targets = [];
+            if (context.eventName === "issues") {
+              targets = [context.payload.issue];
+            } else if (context.eventName === "workflow_dispatch" && core.getInput("issue_number")) {
+              const issueNumber = Number(core.getInput("issue_number"));
+              if (!Number.isInteger(issueNumber) || issueNumber <= 0) {
+                core.setFailed("issue_number must be a positive integer.");
+                return;
+              }
+              const { data } = await github.rest.issues.get({
+                owner,
+                repo,
+                issue_number: issueNumber
+              });
+              targets = [data];
+            } else {
+              const allOpenIssues = await getOpenIssues();
+              targets = allOpenIssues.filter((item) => !item.pull_request);
+            }
+
+            let requested = 0;
+            let alreadyLinked = 0;
+            let skipped = 0;
+
+            for (const issue of targets) {
+              const result = await processIssue(issue);
+              if (result === "requested") requested += 1;
+              if (result === "already_linked") alreadyLinked += 1;
+              if (result === "skipped") skipped += 1;
+            }
+
+            core.summary
+              .addHeading("Auto Copilot Issue PR Result")
+              .addTable([
+                [{ data: "Processed", header: true }, String(targets.length)],
+                [{ data: "Requested", header: true }, String(requested)],
+                [{ data: "Already linked PR", header: true }, String(alreadyLinked)],
+                [{ data: "Skipped", header: true }, String(skipped)]
+              ])
+              .write();
