@@ -42,14 +42,11 @@ jobs:
             }
 
             async function hasLinkedPr(issueNumber) {
-              const timeline = await github.paginate(github.request, "GET /repos/{owner}/{repo}/issues/{issue_number}/timeline", {
+              const timeline = await github.paginate(github.rest.issues.listEventsForTimeline, {
                 owner,
                 repo,
                 issue_number: issueNumber,
-                per_page: 100,
-                headers: {
-                  accept: "application/vnd.github+json"
-                }
+                per_page: 100
               });
 
               return timeline.some((event) => event.event === "cross-referenced" && event.source?.issue?.pull_request);
@@ -105,7 +102,7 @@ jobs:
                     "- 以最小可行且完整的變更實作",
                     `- PR 內容需關聯此 issue（例如 Closes #${issueNumber}）`,
                     "- 包含必要測試或文件更新（若適用）"
-                  ].join("\\n")
+                  ].join("\n")
                 });
                 core.info(`#${issueNumber}: copilot request comment created.`);
               } else {
@@ -116,10 +113,11 @@ jobs:
             }
 
             let targets = [];
+            const dispatchIssueInput = context.payload.inputs?.issue_number?.trim();
             if (context.eventName === "issues") {
               targets = [context.payload.issue];
-            } else if (context.eventName === "workflow_dispatch" && core.getInput("issue_number")) {
-              const issueNumber = Number(core.getInput("issue_number"));
+            } else if (context.eventName === "workflow_dispatch" && dispatchIssueInput) {
+              const issueNumber = Number(dispatchIssueInput);
               if (!Number.isInteger(issueNumber) || issueNumber <= 0) {
                 core.setFailed("issue_number must be a positive integer.");
                 return;
