@@ -1,0 +1,96 @@
+name: Issue Triage
+
+on:
+  issues:
+    types: [opened, edited, reopened]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto label and validate issue fields
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = issue.number;
+            const body = issue.body || "";
+
+            const extract = (sectionTitle) => {
+              const escaped = sectionTitle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+              const regex = new RegExp(`###\\s+${escaped}\\s*\\n([\\s\\S]*?)(?=\\n###\\s+|$)`, "i");
+              const match = body.match(regex);
+              return match ? match[1].trim() : "";
+            };
+
+            const bodyType = extract("Body Type");
+            const priority = extract("Priority");
+            const goal = extract("目的") || extract("問題描述");
+            const tasks = extract("工作項目") || extract("重現步驟");
+            const dod = extract("Definition of Done (DoD)");
+            const extraLabelsRaw = extract("Labels（額外）") || extract("Labels(額外)");
+
+            const labels = new Set();
+
+            const bodyTypeMap = {
+              Epic: "type:epic",
+              Feature: "type:feature",
+              Task: "type:task",
+              Bug: "type:bug"
+            };
+            if (bodyTypeMap[bodyType]) labels.add(bodyTypeMap[bodyType]);
+
+            const priorityMap = {
+              P0: "priority:P0",
+              P1: "priority:P1",
+              P2: "priority:P2",
+              P3: "priority:P3"
+            };
+            if (priorityMap[priority]) labels.add(priorityMap[priority]);
+
+            if (extraLabelsRaw) {
+              extraLabelsRaw
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
+                .forEach((l) => labels.add(l));
+            }
+
+            if (labels.size > 0) {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number,
+                labels: Array.from(labels)
+              });
+            }
+
+            const missing = [];
+            if (!bodyType) missing.push("Body Type");
+            if (!priority) missing.push("Priority");
+            if (!goal || goal.length < 10) missing.push("目的 / 問題描述（至少 10 字）");
+            if (!tasks || tasks.length < 10) missing.push("工作項目 / 重現步驟（至少 10 字）");
+            if (!dod || dod.length < 10) missing.push("Definition of Done（至少 10 字）");
+
+            if (missing.length > 0) {
+              const notice = [
+                "感謝提交 Issue！目前有欄位需要補充，請編輯此 Issue：",
+                "",
+                ...missing.map((m) => `- [ ] ${m}`),
+                "",
+                "補齊後 Workflow 會再次自動檢查。"
+              ].join("\n");
+
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body: notice
+              });
+            }

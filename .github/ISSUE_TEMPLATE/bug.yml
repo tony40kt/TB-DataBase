@@ -1,0 +1,67 @@
+name: Bug Report（錯誤回報）
+description: 回報問題與重現步驟。
+title: "[BUG] "
+labels:
+  - type:bug
+body:
+  - type: dropdown
+    id: body_type
+    attributes:
+      label: Body Type
+      options:
+        - Bug
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0
+        - P1
+        - P2
+        - P3
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: 問題描述
+      placeholder: 具體描述問題現象與影響範圍
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: 重現步驟
+      placeholder: |
+        1. 進入頁面...
+        2. 點擊...
+        3. 發生...
+    validations:
+      required: true
+
+  - type: textarea
+    id: dod
+    attributes:
+      label: Definition of Done (DoD)
+      placeholder: |
+        - [ ] 修復後可穩定重測通過
+        - [ ] 不影響既有功能
+    validations:
+      required: true
+
+  - type: input
+    id: labels_extra
+    attributes:
+      label: Labels（額外）
+      placeholder: area:ui,area:logs
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 相關備註
+      description: 可附裝置型號、系統版本、截圖或影片連結。

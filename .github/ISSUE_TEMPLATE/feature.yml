@@ -1,0 +1,71 @@
+name: Feature Request（功能需求）
+description: 提出新功能需求（含目的、工作項目、DoD）。
+title: "[FEATURE] "
+labels:
+  - type:feature
+body:
+  - type: dropdown
+    id: body_type
+    attributes:
+      label: Body Type
+      options:
+        - Feature
+        - Epic
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0
+        - P1
+        - P2
+        - P3
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: 目的
+      description: 這個功能要解決什麼問題？
+      placeholder: 例如：讓現場工程師能快速找到相似故障案例
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: 工作項目
+      description: 請列出可執行項目（建議使用清單）。
+      placeholder: |
+        - [ ] 子任務 1
+        - [ ] 子任務 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: dod
+    attributes:
+      label: Definition of Done (DoD)
+      description: 完成判準（可驗收標準）。
+      placeholder: |
+        - [ ] 驗收條件 1
+        - [ ] 驗收條件 2
+    validations:
+      required: true
+
+  - type: input
+    id: labels_extra
+    attributes:
+      label: Labels（額外）
+      description: 可填寫建議標籤（逗號分隔），例如 area:search,area:auth
+      placeholder: area:logs,area:ui
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 相關備註
+      description: 任何限制、風險、依賴項目。
