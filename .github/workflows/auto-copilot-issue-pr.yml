@@ -60,7 +60,7 @@ jobs:
                 state: "open",
                 per_page: 100
               });
-              const closingKeyword = new RegExp(`\\b(close[sd]?|fix(es|ed)?|resolve[sd]?)\\s+#${issueNumber}\\b`, "i");
+              const closingKeyword = new RegExp(`\\b(close[sd]?|fix(es|ed)?|resolve[sd]?)\\s*#${issueNumber}\\b`, "i");
               return pullRequests.some((pr) => {
                 const text = `${pr.title || ""}\n${pr.body || ""}`;
                 return closingKeyword.test(text);
@@ -129,7 +129,8 @@ jobs:
             }
 
             let targets = [];
-            const dispatchIssueInput = context.payload.inputs?.issue_number?.trim();
+            const rawDispatchIssueInput = context.payload.inputs?.issue_number;
+            const dispatchIssueInput = typeof rawDispatchIssueInput === "string" ? rawDispatchIssueInput.trim() : undefined;
             if (context.eventName === "issues") {
               targets = [context.payload.issue];
             } else if (context.eventName === "workflow_dispatch" && dispatchIssueInput) {
