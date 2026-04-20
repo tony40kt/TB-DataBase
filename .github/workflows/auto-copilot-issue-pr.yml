@@ -49,7 +49,22 @@ jobs:
                 per_page: 100
               });
 
-              return timeline.some((event) => event.event === "cross-referenced" && event.source?.issue?.pull_request);
+              const hasTimelineLink = timeline.some(
+                (event) => event.event === "cross-referenced" && event.source?.issue?.pull_request
+              );
+              if (hasTimelineLink) return true;
+
+              const pullRequests = await github.paginate(github.rest.pulls.list, {
+                owner,
+                repo,
+                state: "all",
+                per_page: 100
+              });
+              const closingKeyword = new RegExp(`\\b(close[sd]?|fix(e[sd])?|resolve[sd]?)\\s+#${issueNumber}\\b`, "i");
+              return pullRequests.some((pr) => {
+                const text = `${pr.title || ""}\n${pr.body || ""}`;
+                return closingKeyword.test(text);
+              });
             }
 
             async function hasRequestComment(issueNumber) {
