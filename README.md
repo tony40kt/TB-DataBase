@@ -99,6 +99,7 @@
 3. **Issue 自動化 Workflow**
    - 依 `Body Type` / `Priority` 自動加標籤
    - 檢查必要欄位是否完整，若不足會自動留言提醒
+   - 依 `docs/issues-backlog.json` 自動建立/更新 backlog issues（支援 push / pull_request）
 
 4. **Labels 自動同步 Workflow**
    - 由 `.github/labels.yml` 統一管理標籤
@@ -122,7 +123,9 @@
 - `.github/ISSUE_TEMPLATE/*.yml`：網頁版 Issue 表單
 - `.github/workflows/issue-triage.yml`：Issue 自動分類與檢查
 - `.github/workflows/sync-labels.yml`：標籤同步
+- `.github/workflows/sync-backlog-issues.yml`：Backlog Issues 自動同步
 - `.github/labels.yml`：標籤定義
+- `docs/issues-backlog.json`：可供 Workflow 同步的 backlog issue 資料源
 
 ---
 

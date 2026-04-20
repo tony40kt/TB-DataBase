@@ -1,0 +1,137 @@
+name: Sync Backlog Issues
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+      - copilot/**
+    paths:
+      - "docs/ISSUES_BACKLOG.zh-TW.md"
+      - "docs/issues-backlog.json"
+      - ".github/workflows/sync-backlog-issues.yml"
+  pull_request:
+    paths:
+      - "docs/ISSUES_BACKLOG.zh-TW.md"
+      - "docs/issues-backlog.json"
+      - ".github/workflows/sync-backlog-issues.yml"
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sync issues from backlog
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'docs/issues-backlog.json';
+
+            if (
+              context.eventName === 'pull_request' &&
+              context.payload.pull_request?.head?.repo?.fork
+            ) {
+              core.info('Skip creating/updating issues for forked pull requests.');
+              return;
+            }
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const backlog = JSON.parse(fs.readFileSync(path, 'utf8'));
+
+            const existingIssues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: 'all',
+              per_page: 100
+            });
+
+            const issuesByTitle = new Map(
+              existingIssues
+                .filter((item) => !item.pull_request)
+                .map((item) => [item.title, item])
+            );
+
+            const renderList = (items) => (items || []).map((item) => `- [ ] ${item}`).join('\n');
+
+            const renderBody = (item) => [
+              `### Body Type\n${item.bodyType}`,
+              `### Priority\n${item.priority}`,
+              `### 目的\n${item.goal}`,
+              `### 工作項目\n${renderList(item.tasks)}`,
+              `### Definition of Done (DoD)\n${renderList(item.dod)}`,
+              `### Labels（額外）\n${(item.labels || []).join(',')}`,
+              `### 相關備註\n${item.notes || '無'}`
+            ].join('\n\n');
+
+            let created = 0;
+            let updated = 0;
+            let unchanged = 0;
+
+            for (const item of backlog) {
+              const expectedBody = renderBody(item);
+              const expectedLabels = Array.from(new Set(item.labels || []));
+              const existing = issuesByTitle.get(item.title);
+
+              if (!existing) {
+                await github.rest.issues.create({
+                  owner,
+                  repo,
+                  title: item.title,
+                  body: expectedBody,
+                  labels: expectedLabels
+                });
+                created += 1;
+                core.info(`Created: ${item.title}`);
+                continue;
+              }
+
+              let changed = false;
+              if ((existing.body || '') !== expectedBody) {
+                await github.rest.issues.update({
+                  owner,
+                  repo,
+                  issue_number: existing.number,
+                  body: expectedBody
+                });
+                changed = true;
+              }
+
+              const currentLabels = new Set((existing.labels || []).map((label) => label.name));
+              const missingLabels = expectedLabels.filter((label) => !currentLabels.has(label));
+              if (missingLabels.length > 0) {
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number: existing.number,
+                  labels: missingLabels
+                });
+                changed = true;
+              }
+
+              if (changed) {
+                updated += 1;
+                core.info(`Updated: ${item.title}`);
+              } else {
+                unchanged += 1;
+              }
+            }
+
+            core.summary
+              .addHeading('Backlog issue sync result')
+              .addTable([
+                [{data: 'Created', header: true}, String(created)],
+                [{data: 'Updated', header: true}, String(updated)],
+                [{data: 'Unchanged', header: true}, String(unchanged)]
+              ])
+              .write();
+
+            core.info(`Done. Created=${created}, Updated=${updated}, Unchanged=${unchanged}`);
