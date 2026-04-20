@@ -101,7 +101,7 @@ jobs:
                     "",
                     "Requirements / 要求：",
                     "- Implement with the smallest complete change set / 以最小可行且完整的變更實作",
-                    `- Link this issue in the PR (e.g. Closes #${issueNumber}) / PR 內容需關聯此 issue（例如 Closes #${issueNumber}）`,
+                    `- Link this issue in the PR (e.g. Closes #${issueNumber}) / PR 內容須關聯此 issue（例如 Closes #${issueNumber}）`,
                     "- Include tests or documentation updates when applicable / 包含必要測試或文件更新（若適用）"
                   ].join("\n")
                 });
