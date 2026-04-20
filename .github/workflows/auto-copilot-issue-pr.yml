@@ -30,7 +30,11 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const marker = "<!-- copilot-auto-pr-request -->";
-            const copilotAssignee = process.env.COPILOT_ASSIGNEE || "copilot-swe-agent";
+            const copilotAssignee = process.env.COPILOT_ASSIGNEE;
+            if (!copilotAssignee) {
+              core.setFailed("COPILOT_ASSIGNEE is required.");
+              return;
+            }
 
             async function getOpenIssues() {
               return github.paginate(github.rest.issues.listForRepo, {
@@ -96,12 +100,13 @@ jobs:
                   issue_number: issueNumber,
                   body: [
                     marker,
+                    "Please @copilot create a PR for this issue and generate all required files and code.",
                     "請 @copilot 根據此 issue 建立一個對應 PR，並補齊完成需求所需的檔案與程式碼。",
                     "",
-                    "要求：",
-                    "- 以最小可行且完整的變更實作",
-                    `- PR 內容需關聯此 issue（例如 Closes #${issueNumber}）`,
-                    "- 包含必要測試或文件更新（若適用）"
+                    "Requirements / 要求：",
+                    "- Implement with the smallest complete change set / 以最小可行且完整的變更實作",
+                    `- Link this issue in the PR (e.g. Closes #${issueNumber}) / PR 內容需關聯此 issue（例如 Closes #${issueNumber}）`,
+                    "- Include tests or documentation updates when applicable / 包含必要測試或文件更新（若適用）"
                   ].join("\n")
                 });
                 core.info(`#${issueNumber}: copilot request comment created.`);
