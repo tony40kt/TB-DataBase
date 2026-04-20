@@ -31,10 +31,6 @@ jobs:
             const repo = context.repo.repo;
             const marker = "<!-- copilot-auto-pr-request -->";
             const copilotAssignee = process.env.COPILOT_ASSIGNEE;
-            if (!copilotAssignee) {
-              core.setFailed("COPILOT_ASSIGNEE is required.");
-              return;
-            }
 
             async function getOpenIssues() {
               return github.paginate(github.rest.issues.listForRepo, {
@@ -144,9 +140,17 @@ jobs:
 
             for (const issue of targets) {
               const result = await processIssue(issue);
-              if (result === "requested") requested += 1;
-              if (result === "already_linked") alreadyLinked += 1;
-              if (result === "skipped") skipped += 1;
+              switch (result) {
+                case "requested":
+                  requested += 1;
+                  break;
+                case "already_linked":
+                  alreadyLinked += 1;
+                  break;
+                default:
+                  skipped += 1;
+                  break;
+              }
             }
 
             core.summary
