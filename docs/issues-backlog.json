@@ -1,0 +1,430 @@
+[
+  {
+    "title": "[EPIC] 專案基礎架構與開發環境建立",
+    "bodyType": "Epic",
+    "priority": "P0",
+    "labels": [
+      "type:epic",
+      "priority:P0",
+      "area:infra"
+    ],
+    "goal": "建立可持續開發的基礎架構與分支流程。",
+    "tasks": [
+      "設定分支保護與 PR 規範",
+      "建立基本目錄結構",
+      "建立 CI 基本流程"
+    ],
+    "dod": [
+      "團隊可用同一流程提交與審查程式碼",
+      "主分支受保護且可追溯"
+    ],
+    "notes": "所有後續 Issue 依賴此 Issue 完成。"
+  },
+  {
+    "title": "[FEATURE] Google（Gmail）登入功能",
+    "bodyType": "Feature",
+    "priority": "P0",
+    "labels": [
+      "type:feature",
+      "priority:P0",
+      "area:auth"
+    ],
+    "goal": "提供使用者以 Gmail 快速登入。",
+    "tasks": [
+      "啟用 Google OAuth",
+      "實作登入 / 登出流程",
+      "儲存基本使用者資料"
+    ],
+    "dod": [
+      "可成功登入 / 登出",
+      "無登入者無法進入受保護頁面"
+    ],
+    "notes": "需與權限模型同步設計。"
+  },
+  {
+    "title": "[FEATURE] 使用者角色與權限模型（4 角色）",
+    "bodyType": "Feature",
+    "priority": "P0",
+    "labels": [
+      "type:feature",
+      "priority:P0",
+      "area:auth",
+      "area:security"
+    ],
+    "goal": "實作超級管理員、管理員、授權人士、訪客權限。",
+    "tasks": [
+      "建立角色欄位與策略",
+      "API/資料存取權限管控",
+      "前端頁面按權限顯示操作按鈕"
+    ],
+    "dod": [
+      "四角色限制皆符合需求",
+      "未授權操作會被拒絕並有提示"
+    ],
+    "notes": "需做權限測試案例。"
+  },
+  {
+    "title": "[FEATURE] 超級管理員權限變更連結產生功能",
+    "bodyType": "Feature",
+    "priority": "P1",
+    "labels": [
+      "type:feature",
+      "priority:P1",
+      "area:auth",
+      "area:security"
+    ],
+    "goal": "由超級管理員發出可限時使用的角色變更連結。",
+    "tasks": [
+      "連結 token 生成與有效期",
+      "角色變更流程與審計紀錄",
+      "一次性使用保護"
+    ],
+    "dod": [
+      "連結可安全生效且過期失效",
+      "變更紀錄可查詢"
+    ],
+    "notes": "避免連結重放攻擊。"
+  },
+  {
+    "title": "[FEATURE] 故障日誌建立（Create）",
+    "bodyType": "Feature",
+    "priority": "P0",
+    "labels": [
+      "type:feature",
+      "priority:P0",
+      "area:logs"
+    ],
+    "goal": "建立標準化故障日誌輸入流程。",
+    "tasks": [
+      "建立欄位與驗證規則",
+      "儲存日誌與建立者資訊",
+      "提交成功提示"
+    ],
+    "dod": [
+      "日誌可正確建立",
+      "必填欄位未填會阻擋提交"
+    ],
+    "notes": "欄位命名需可長期擴充。"
+  },
+  {
+    "title": "[FEATURE] 故障日誌修改（Update）",
+    "bodyType": "Feature",
+    "priority": "P0",
+    "labels": [
+      "type:feature",
+      "priority:P0",
+      "area:logs"
+    ],
+    "goal": "可修正已建立日誌內容。",
+    "tasks": [
+      "權限檢查（授權人士僅可改自己）",
+      "編輯表單與版本時間更新",
+      "操作結果提示"
+    ],
+    "dod": [
+      "依角色可/不可修改符合規格",
+      "更新後資料正確顯示"
+    ],
+    "notes": "建議保留修改歷史（可後續擴充）。"
+  },
+  {
+    "title": "[FEATURE] 故障日誌刪除（Delete）",
+    "bodyType": "Feature",
+    "priority": "P0",
+    "labels": [
+      "type:feature",
+      "priority:P0",
+      "area:logs"
+    ],
+    "goal": "提供安全刪除流程。",
+    "tasks": [
+      "權限檢查",
+      "二次確認 UI",
+      "刪除結果回饋"
+    ],
+    "dod": [
+      "僅有權限角色可刪除",
+      "刪除後列表與搜尋不再顯示"
+    ],
+    "notes": "可評估軟刪除機制。"
+  },
+  {
+    "title": "[FEATURE] 故障日誌搜尋：關鍵字",
+    "bodyType": "Feature",
+    "priority": "P0",
+    "labels": [
+      "type:feature",
+      "priority:P0",
+      "area:search"
+    ],
+    "goal": "用關鍵字快速找到相似案例。",
+    "tasks": [
+      "關鍵字查詢邏輯",
+      "搜尋結果列表",
+      "無結果提示"
+    ],
+    "dod": [
+      "輸入關鍵字可回傳相關資料",
+      "回應時間可接受"
+    ],
+    "notes": "後續可加入模糊搜尋。"
+  },
+  {
+    "title": "[FEATURE] 故障日誌搜尋：相關部件",
+    "bodyType": "Feature",
+    "priority": "P1",
+    "labels": [
+      "type:feature",
+      "priority:P1",
+      "area:search"
+    ],
+    "goal": "依部件定位可能原因與處理方式。",
+    "tasks": [
+      "部件欄位索引",
+      "部件篩選 UI",
+      "結果排序"
+    ],
+    "dod": [
+      "指定部件能回傳對應案例",
+      "搜尋條件可清除重設"
+    ],
+    "notes": "需統一部件命名規則。"
+  },
+  {
+    "title": "[FEATURE] 故障日誌搜尋：故障碼",
+    "bodyType": "Feature",
+    "priority": "P0",
+    "labels": [
+      "type:feature",
+      "priority:P0",
+      "area:search"
+    ],
+    "goal": "透過故障碼精準查詢案例。",
+    "tasks": [
+      "故障碼欄位規則",
+      "故障碼查詢 API",
+      "結果顯示與跳轉"
+    ],
+    "dod": [
+      "輸入故障碼可命中對應案例",
+      "可從結果進入詳情"
+    ],
+    "notes": "建議支援多廠牌碼制。"
+  },
+  {
+    "title": "[FEATURE] 日誌詳情頁（完整故障處理記錄）",
+    "bodyType": "Feature",
+    "priority": "P1",
+    "labels": [
+      "type:feature",
+      "priority:P1",
+      "area:logs",
+      "area:ui"
+    ],
+    "goal": "集中呈現故障現象、根因、處理步驟與結果。",
+    "tasks": [
+      "詳情頁版面設計",
+      "欄位分段顯示",
+      "操作按鈕權限控制"
+    ],
+    "dod": [
+      "內容完整且易讀",
+      "權限按鈕顯示正確"
+    ],
+    "notes": "可加入列印/分享功能（後續）。"
+  },
+  {
+    "title": "[FEATURE] 日誌清單頁與分頁/載入優化",
+    "bodyType": "Feature",
+    "priority": "P2",
+    "labels": [
+      "type:feature",
+      "priority:P2",
+      "area:logs",
+      "area:performance"
+    ],
+    "goal": "在資料量成長後仍維持可用性。",
+    "tasks": [
+      "分頁或無限滾動",
+      "基本排序（新到舊）",
+      "載入中狀態"
+    ],
+    "dod": [
+      "清單載入流暢",
+      "操作不造成明顯卡頓"
+    ],
+    "notes": "與搜尋效能一起驗證。"
+  },
+  {
+    "title": "[TASK] 欄位字典與故障碼命名規範",
+    "bodyType": "Task",
+    "priority": "P1",
+    "labels": [
+      "type:task",
+      "priority:P1",
+      "area:data"
+    ],
+    "goal": "確保資料可被長期維護與搜尋。",
+    "tasks": [
+      "制定欄位字典",
+      "統一部件、故障碼格式",
+      "文件化規範"
+    ],
+    "dod": [
+      "有可遵循的命名規範文件",
+      "新資料輸入符合規範"
+    ],
+    "notes": "避免同義詞造成搜尋落差。"
+  },
+  {
+    "title": "[TASK] 權限測試案例（角色邊界）",
+    "bodyType": "Task",
+    "priority": "P1",
+    "labels": [
+      "type:task",
+      "priority:P1",
+      "area:test",
+      "area:security"
+    ],
+    "goal": "驗證角色權限不會越權。",
+    "tasks": [
+      "4 角色 CRUD 測試矩陣",
+      "搜尋權限驗證",
+      "權限拒絕訊息驗證"
+    ],
+    "dod": [
+      "主要邊界情境都有測試",
+      "越權情境可穩定被阻擋"
+    ],
+    "notes": "每次權限調整都需回歸。"
+  },
+  {
+    "title": "[TASK] 行動端 UI（繁體中文）一致性檢查",
+    "bodyType": "Task",
+    "priority": "P1",
+    "labels": [
+      "type:task",
+      "priority:P1",
+      "area:ui"
+    ],
+    "goal": "確保所有頁面與提示訊息皆為繁體中文且用詞一致。",
+    "tasks": [
+      "頁面文案盤點",
+      "按鈕與提示一致化",
+      "錯誤訊息在地化"
+    ],
+    "dod": [
+      "關鍵流程均為繁體中文",
+      "無混雜簡體/英文殘留"
+    ],
+    "notes": "可建立文案詞庫。"
+  },
+  {
+    "title": "[TASK] 搜尋效能基準與索引策略",
+    "bodyType": "Task",
+    "priority": "P2",
+    "labels": [
+      "type:task",
+      "priority:P2",
+      "area:search",
+      "area:performance"
+    ],
+    "goal": "建立可持續優化的效能基準。",
+    "tasks": [
+      "定義基準資料量",
+      "測試關鍵字/部件/故障碼查詢",
+      "建議索引策略"
+    ],
+    "dod": [
+      "有量化結果與優化建議",
+      "查詢效能達可接受範圍"
+    ],
+    "notes": "資料量擴大後需重測。"
+  },
+  {
+    "title": "[TASK] 資料備份與復原流程",
+    "bodyType": "Task",
+    "priority": "P1",
+    "labels": [
+      "type:task",
+      "priority:P1",
+      "area:ops",
+      "area:data"
+    ],
+    "goal": "確保資料遺失風險可控。",
+    "tasks": [
+      "定義備份週期",
+      "建立復原演練流程",
+      "紀錄責任與步驟"
+    ],
+    "dod": [
+      "可執行完整備份與復原演練",
+      "有明確操作文件"
+    ],
+    "notes": "建議至少月度演練一次。"
+  },
+  {
+    "title": "[TASK] 事件審計與操作紀錄",
+    "bodyType": "Task",
+    "priority": "P2",
+    "labels": [
+      "type:task",
+      "priority:P2",
+      "area:security",
+      "area:ops"
+    ],
+    "goal": "追蹤重要操作（登入、刪除、權限變更）。",
+    "tasks": [
+      "定義審計事件清單",
+      "建立查詢介面",
+      "保留期限設定"
+    ],
+    "dod": [
+      "重要操作皆可追溯",
+      "可依時間/人員查詢"
+    ],
+    "notes": "需注意隱私與留存政策。"
+  },
+  {
+    "title": "[TASK] 上線前安全檢查清單",
+    "bodyType": "Task",
+    "priority": "P1",
+    "labels": [
+      "type:task",
+      "priority:P1",
+      "area:security"
+    ],
+    "goal": "降低上線安全風險。",
+    "tasks": [
+      "檢查權限設定與密鑰管理",
+      "檢查 API 與資料存取限制",
+      "檢查第三方登入設定"
+    ],
+    "dod": [
+      "安全檢查清單全數通過",
+      "高風險項目已修復或有補償措施"
+    ],
+    "notes": "上線前必做 Gate。"
+  },
+  {
+    "title": "[TASK] MVP 驗收與使用者教學文件",
+    "bodyType": "Task",
+    "priority": "P1",
+    "labels": [
+      "type:task",
+      "priority:P1",
+      "area:docs"
+    ],
+    "goal": "確保非工程背景使用者可實際操作。",
+    "tasks": [
+      "MVP 功能驗收",
+      "建立圖文教學（登入、建檔、搜尋）",
+      "常見問題整理"
+    ],
+    "dod": [
+      "非工程背景使用者可獨立完成主要流程",
+      "文件可被持續更新"
+    ],
+    "notes": "建議附短影片教學。"
+  }
+]
