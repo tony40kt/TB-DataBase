@@ -62,6 +62,17 @@ jobs:
                 .forEach((l) => labels.add(l));
             }
 
+            const existingLabelNames = new Set((issue.labels || []).map((l) => l.name));
+            const hasStatusLabel =
+              existingLabelNames.has("status:todo") ||
+              existingLabelNames.has("status:in-progress") ||
+              labels.has("status:todo") ||
+              labels.has("status:in-progress");
+
+            if (!hasStatusLabel) {
+              labels.add("status:todo");
+            }
+
             if (labels.size > 0) {
               await github.rest.issues.addLabels({
                 owner,

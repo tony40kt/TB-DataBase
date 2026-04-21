@@ -124,6 +124,8 @@
 - `.github/workflows/issue-triage.yml`：Issue 自動分類與檢查
 - `.github/workflows/sync-labels.yml`：標籤同步
 - `.github/workflows/sync-backlog-issues.yml`：Backlog Issues 自動同步
+- `.github/workflows/auto-implement-issue.yml`：`auto:implement` Issue 自動建立 PR 並指派 Copilot agent
+- `.github/workflows/sync-issue-status-from-pr.yml`：PR 連結 Issue 時自動轉為 In Progress
 - `.github/labels.yml`：標籤定義
 - `docs/issues-backlog.json`：可供 Workflow 同步的 backlog issue 資料源
 

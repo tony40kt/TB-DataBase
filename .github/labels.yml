@@ -57,3 +57,15 @@
 - name: "area:docs"
   color: "0075ca"
   description: "文件相關"
+
+- name: "auto:implement"
+  color: "5319e7"
+  description: "交由自動化流程建立實作 PR"
+
+- name: "status:todo"
+  color: "d4c5f9"
+  description: "待處理"
+
+- name: "status:in-progress"
+  color: "fbca04"
+  description: "進行中"
