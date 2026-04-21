@@ -45,8 +45,12 @@ jobs:
                 issue_number: issueNumber
               });
               const issue = issueResp.data;
-              if (issue.state !== "open" || issue.pull_request) {
-                core.info(`Skip #${issueNumber}: not an open issue.`);
+              if (issue.pull_request) {
+                core.info(`Skip #${issueNumber}: reference points to a pull request, not an issue.`);
+                continue;
+              }
+              if (issue.state !== "open") {
+                core.info(`Skip #${issueNumber}: issue is not open.`);
                 continue;
               }
 

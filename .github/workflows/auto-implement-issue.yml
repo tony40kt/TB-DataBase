@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: auto-implement-issue-${{ github.event.issue.number }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   auto-implement:
@@ -42,16 +42,19 @@ jobs:
             const issueNumber = issue.number;
             const safeTitle = (issue.title || "Untitled issue").trim();
             const branch = `auto/issue-${issueNumber}-implement`;
-            const issueRefRegex = new RegExp(`\\b#${issueNumber}\\b`);
+            const closeIssueRegex = new RegExp(
+              `\\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\\s*#${issueNumber}\\b`,
+              "i"
+            );
 
-            const hasIssueRef = (text) => issueRefRegex.test(text || "");
+            const hasClosingIssueRef = (text) => closeIssueRegex.test(text || "");
             const openPulls = await github.paginate(github.rest.pulls.list, {
               owner,
               repo,
               state: "open",
               per_page: 100
             });
-            let targetPr = openPulls.find((pr) => pr.head?.ref === branch || hasIssueRef(pr.body));
+            let targetPr = openPulls.find((pr) => pr.head?.ref === branch || hasClosingIssueRef(pr.body));
 
             const repoInfo = await github.rest.repos.get({ owner, repo });
             const defaultBranch = repoInfo.data.default_branch;
@@ -144,7 +147,7 @@ jobs:
                   state: "open",
                   per_page: 100
                 });
-                targetPr = reloadedPulls.find((pr) => pr.head?.ref === branch || hasIssueRef(pr.body));
+                targetPr = reloadedPulls.find((pr) => pr.head?.ref === branch || hasClosingIssueRef(pr.body));
                 if (!targetPr) throw error;
                 core.info(`Reused existing PR #${targetPr.number}`);
               }
