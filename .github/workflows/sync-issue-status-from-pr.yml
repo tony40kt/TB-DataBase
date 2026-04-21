@@ -64,12 +64,14 @@ jobs:
                 }
               }
 
-              await github.rest.issues.addLabels({
-                owner,
-                repo,
-                issue_number: issueNumber,
-                labels: ["status:in-progress"]
-              });
+              if (!labelNames.has("status:in-progress")) {
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number: issueNumber,
+                  labels: ["status:in-progress"]
+                });
+              }
 
               core.info(`Updated issue #${issueNumber} => status:in-progress`);
             }

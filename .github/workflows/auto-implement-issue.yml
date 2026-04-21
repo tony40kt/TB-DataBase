@@ -42,8 +42,9 @@ jobs:
             const issueNumber = issue.number;
             const safeTitle = (issue.title || "Untitled issue").trim();
             const branch = `auto/issue-${issueNumber}-implement`;
+            const issueRefRegex = new RegExp(`\\b#${issueNumber}\\b`);
 
-            const hasIssueRef = (text) => new RegExp(`\\b#${issueNumber}\\b`).test(text || "");
+            const hasIssueRef = (text) => issueRefRegex.test(text || "");
             const openPulls = await github.paginate(github.rest.pulls.list, {
               owner,
               repo,
@@ -203,12 +204,14 @@ jobs:
               }
             }
 
-            await github.rest.issues.addLabels({
-              owner,
-              repo,
-              issue_number: issueNumber,
-              labels: ["status:in-progress"]
-            });
+            if (!labelNames.has("status:in-progress")) {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: issueNumber,
+                labels: ["status:in-progress"]
+              });
+            }
 
             const issueComments = await github.paginate(github.rest.issues.listComments, {
               owner,
