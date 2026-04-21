@@ -27,10 +27,11 @@ jobs:
             const pr = context.payload.pull_request;
             const text = [pr.title || "", pr.body || ""].join("\n");
 
-            const closeRegex = /\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*#(\d+)\b/gi;
+            const closeRegex =
+              /\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*(?:#(\d+)|https?:\/\/github\.com\/[^\/\s]+\/[^\/\s]+\/issues\/(\d+))/gi;
             const issueNumbers = new Set();
             for (const match of text.matchAll(closeRegex)) {
-              issueNumbers.add(Number(match[1]));
+              issueNumbers.add(Number(match[1] || match[2]));
             }
 
             if (issueNumbers.size === 0) {
