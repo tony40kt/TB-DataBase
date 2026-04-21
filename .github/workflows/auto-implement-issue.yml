@@ -168,17 +168,27 @@ jobs:
               core.warning(`Unable to assign PR #${targetPr.number} to configured assignees: ${error.message}`);
             }
 
-            await github.rest.issues.createComment({
+            const prCommentMarker = "<!-- auto-implement-copilot-task -->";
+            const prComments = await github.paginate(github.rest.issues.listComments, {
               owner,
               repo,
               issue_number: targetPr.number,
-              body: [
-                "<!-- auto-implement-copilot-task -->",
-                "Copilot agent task:",
-                `- Source issue: #${issueNumber}`,
-                "- Please implement the issue requirements and update this PR."
-              ].join("\n")
+              per_page: 100
             });
+            const hasCopilotTaskComment = prComments.some((c) => (c.body || "").includes(prCommentMarker));
+            if (!hasCopilotTaskComment) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: targetPr.number,
+                body: [
+                  prCommentMarker,
+                  "Copilot agent task:",
+                  `- Source issue: #${issueNumber}`,
+                  "- Please implement the issue requirements and update this PR."
+                ].join("\n")
+              });
+            }
 
             if (labelNames.has("status:todo")) {
               try {
