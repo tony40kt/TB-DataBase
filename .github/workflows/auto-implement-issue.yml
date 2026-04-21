@@ -42,19 +42,13 @@ jobs:
             const issueNumber = issue.number;
             const safeTitle = (issue.title || "Untitled issue").trim();
             const branch = `auto/issue-${issueNumber}-implement`;
-            const closeIssueRegex = new RegExp(
-              `\\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\\s*#${issueNumber}\\b`,
-              "i"
-            );
-
-            const hasClosingIssueRef = (text) => closeIssueRegex.test(text || "");
             const openPulls = await github.paginate(github.rest.pulls.list, {
               owner,
               repo,
               state: "open",
               per_page: 100
             });
-            let targetPr = openPulls.find((pr) => pr.head?.ref === branch || hasClosingIssueRef(pr.body));
+            let targetPr = openPulls.find((pr) => pr.head?.ref === branch);
 
             const repoInfo = await github.rest.repos.get({ owner, repo });
             const defaultBranch = repoInfo.data.default_branch;
@@ -117,6 +111,7 @@ jobs:
               }
 
               const prBody = [
+                "<!-- auto-implement-pr -->",
                 `Auto-generated from issue #${issueNumber}.`,
                 "",
                 `Closes #${issueNumber}`,
@@ -147,7 +142,7 @@ jobs:
                   state: "open",
                   per_page: 100
                 });
-                targetPr = reloadedPulls.find((pr) => pr.head?.ref === branch || hasClosingIssueRef(pr.body));
+                targetPr = reloadedPulls.find((pr) => pr.head?.ref === branch);
                 if (!targetPr) throw error;
                 core.info(`Reused existing PR #${targetPr.number}`);
               }
@@ -231,8 +226,11 @@ jobs:
                 issue_number: issueNumber,
                 body: [
                   marker,
+                  `Auto-created and linked PR: #${targetPr.number}`,
+                  "Issue status has been updated to `status:in-progress`.",
+                  "",
                   `已自動建立並連結 PR: #${targetPr.number}`,
-                  "Issue status 已更新為 `status:in-progress`。"
+                  "Issue 狀態已更新為 `status:in-progress`。"
                 ].join("\n")
               });
             }
