@@ -42,11 +42,12 @@
 > 此處是建議架構，後續可在 Issues 中逐步落地。
 
 - 前端：React Native（單一程式碼支援 iOS / Android）
+- 手機端 SDK：**Expo SDK 54.0.2**（所有開發程式碼須以此版本為基準）
 - 後端與資料庫：Supabase（PostgreSQL + Auth + Storage）
 - 驗證：Google OAuth（Gmail 登入）
 - 權限：資料表角色欄位 + Row Level Security（RLS）
 - 部署：
-  - App 測試階段：Expo 測試佈署
+  - App 測試階段：Expo SDK 54.0.2 測試佈署
   - 後端：Supabase 雲端託管
 
 ---

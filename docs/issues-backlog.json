@@ -12,13 +12,15 @@
     "tasks": [
       "設定分支保護與 PR 規範",
       "建立基本目錄結構",
-      "建立 CI 基本流程"
+      "建立 CI 基本流程",
+      "設定手機端 SDK 版本：Expo SDK 54.0.2（所有開發程式碼須以此版本為基準，包含 expo、react-native、expo-router 及相關套件均需對齊 SDK 54 相容版本）"
     ],
     "dod": [
       "團隊可用同一流程提交與審查程式碼",
-      "主分支受保護且可追溯"
+      "主分支受保護且可追溯",
+      "專案 package.json 明確鎖定 Expo SDK 54.0.2"
     ],
-    "notes": "所有後續 Issue 依賴此 Issue 完成。"
+    "notes": "所有後續 Issue 依賴此 Issue 完成。手機端 SDK 版本須於環境建立階段確認，後續功能開發一律以 Expo SDK 54.0.2 為準。"
   },
   {
     "title": "[FEATURE] Google（Gmail）登入功能",
