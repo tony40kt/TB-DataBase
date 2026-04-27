@@ -26,10 +26,12 @@ body:
       required: true
 
   - type: textarea
-    id: goal
+    id: dod
     attributes:
-      label: 目的
-      placeholder: 例如：完成角色權限邊界測試
+      label: Definition of Done (DoD)
+      placeholder: |
+        - [ ] 驗收條件 1
+        - [ ] 驗收條件 2
     validations:
       required: true
 
