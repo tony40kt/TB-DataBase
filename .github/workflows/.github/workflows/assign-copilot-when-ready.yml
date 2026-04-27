@@ -1,0 +1,115 @@
+name: Assign Copilot When Issue Is Ready
+
+on:
+  issues:
+    types: [labeled, unlabeled, edited, reopened]
+
+permissions:
+  issues: write
+
+concurrency:
+  group: assign-copilot-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  assign:
+    if: ${{ github.event.issue.pull_request == null }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign Copilot when labels are ready
+        uses: actions/github-script@v7
+        env:
+          COPILOT_ASSIGNEES: ${{ vars.COPILOT_ASSIGNEES }}
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue = context.payload.issue;
+
+            if (!issue || issue.state !== "open") {
+              core.info("Skip: issue missing or not open.");
+              return;
+            }
+
+            const labelNames = new Set((issue.labels || []).map((l) => l.name));
+
+            // Ready conditions (your rule #2)
+            const hasAuto = labelNames.has("auto:implement");
+            const hasTodo = labelNames.has("status:todo");
+
+            const hasType =
+              labelNames.has("type:epic") ||
+              labelNames.has("type:feature") ||
+              labelNames.has("type:task") ||
+              labelNames.has("type:bug");
+
+            const hasPriority =
+              labelNames.has("priority:P0") ||
+              labelNames.has("priority:P1") ||
+              labelNames.has("priority:P2") ||
+              labelNames.has("priority:P3");
+
+            if (!(hasAuto && hasTodo && hasType && hasPriority)) {
+              core.info("Skip: issue not ready (needs auto:implement + status:todo + type:* + priority:*).");
+              return;
+            }
+
+            // Optional: require DoD to be more explicit (reduce Copilot guessing)
+            const body = issue.body || "";
+            const dodMatch = body.match(/###\s+Definition of Done \(DoD\)\s*\n([\s\S]*?)(?=\n###\s+|$)/i);
+            const dodText = (dodMatch?.[1] || "").trim();
+            const checkboxCount = (dodText.match(/- \[ \]/g) || []).length;
+
+            // You can tune these thresholds
+            if (dodText.length < 80 || checkboxCount < 5) {
+              core.info(`Skip: DoD not explicit enough (len=${dodText.length}, checkboxes=${checkboxCount}).`);
+              core.info("Tip: expand DoD with >= 5 checkboxes and >= 80 chars.");
+              return;
+            }
+
+            // Determine assignees: from repo var or fallback to "copilot"
+            const assignees = (process.env.COPILOT_ASSIGNEES || "copilot")
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean);
+
+            // Avoid re-assign spam if already assigned
+            const currentAssignees = new Set((issue.assignees || []).map((a) => a.login));
+            const missingAssignees = assignees.filter((a) => !currentAssignees.has(a));
+            if (missingAssignees.length === 0) {
+              core.info("Skip: Copilot already assigned.");
+              return;
+            }
+
+            await github.rest.issues.addAssignees({
+              owner,
+              repo,
+              issue_number: issue.number,
+              assignees: missingAssignees
+            });
+
+            // Leave a helpful comment once
+            const marker = "<!-- auto-assign-copilot -->";
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: issue.number,
+              per_page: 100
+            });
+            const alreadyCommented = comments.some((c) => (c.body || "").includes(marker));
+
+            if (!alreadyCommented) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: issue.number,
+                body: [
+                  marker,
+                  "已符合自動實作條件（auto:implement + status:todo + type + priority），已自動指派 Copilot。",
+                  "",
+                  "請 Copilot 依照 Issue 內容完成需求，並在 PR 說明中逐條對照 DoD。"
+                ].join("\n")
+              });
+            }
+
+            core.info(`Assigned: ${missingAssignees.join(", ")}`);
