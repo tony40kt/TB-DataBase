@@ -1,8 +1,7 @@
 name: Auto Implement Issue
 
 on:
-  issues:
-    types: [opened, reopened, labeled, edited]
+  workflow_dispatch:
 
 permissions:
   contents: write
